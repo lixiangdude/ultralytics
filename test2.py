@@ -135,4 +135,4 @@ for id in imgs:
         img = cv2.imdecode(np.fromstring(res.content, dtype=np.uint8), cv2.IMREAD_COLOR)
         cv2.imwrite(os.path.join(path, image_url.split('/')[-1]), img)
         # print(f'下载: {image_url}')
-        print(os.path.join(path, image_url.split("/")[-1]))
+        print(f"'{os.path.join(path, image_url.split("/")[-1])}',")

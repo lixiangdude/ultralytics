@@ -13,9 +13,9 @@ idx = 0
 
 failed = 0
 
-urls = json.load(open("/home/lixiang/下载/workbook/urls.json"))
+urls = ['https://ow-prod-cdn.survey.work/platform_id_1/app_id_null/roled_user_id_null/type_1/809d5a96fee24fc294fb4a8d5445412a.jpg']
 
-MAX_WORKERS = 500
+MAX_WORKERS = 1
 
 # res = requests.get(image_url)
 # img = cv2.imdecode(np.fromstring(res.content, dtype=np.uint8), cv2.IMREAD_COLOR)
@@ -40,20 +40,22 @@ def copy_img(url):
     result = bucket.copy_object(src_bucket_name, src_object_name, dest_object_name)
     # 查看返回结果的状态。如果返回值为200，表示执行成功。
     # img = cv2.imread(image_url)
+    print(result)
     if result.status != 200:
-        print(result.resp)
+        print(result.resp.response.url)
 
 
 idx = 0
 begin = time.time()
-for urls in url_batches:
-    batch_begin = time.time()
-    with futures.ThreadPoolExecutor(max_workers=max(MAX_WORKERS, len(urls))) as executor:  # 实例化线程池
-        res = executor.map(copy_img, urls)
-
-        # 跟内置的map很像，对序列进行相同操作，注意是异步、非阻塞的！
-        # 返回的是一个生成器，需要调用next
-    idx += len(urls)
-    print(f"已复制{idx}张图片，当前批次耗时{time.time() - batch_begin}秒，总耗时{time.time() - begin}秒")
-    # img = cv2.imread(image_url)
-    # cv2.imwrite(os.path.join("/home/lixiang/下载/workbook/图片", image_url.split("/")[-1]), img)
+copy_img('/platform_id_1/app_id_null/roled_user_id_null/type_1/809d5a96fee24fc294fb4a8d5445412a.jpg')
+# for urls in url_batches:
+#     batch_begin = time.time()
+#     with futures.ThreadPoolExecutor(max_workers=max(MAX_WORKERS, len(urls))) as executor:  # 实例化线程池
+#         res = executor.map(copy_img, urls)
+#
+#         # 跟内置的map很像，对序列进行相同操作，注意是异步、非阻塞的！
+#         # 返回的是一个生成器，需要调用next
+#     idx += len(urls)
+#     print(f"已复制{idx}张图片，当前批次耗时{time.time() - batch_begin}秒，总耗时{time.time() - begin}秒")
+#     # img = cv2.imread(image_url)
+#     # cv2.imwrite(os.path.join("/home/lixiang/下载/workbook/图片", image_url.split("/")[-1]), img)

@@ -3,12 +3,18 @@ import math
 import os.path
 import time
 
+import requests
+import torch
+
+from ultralytics import YOLO, YOLOWorld
 import cv2
 import numpy as np
 import requests
 import torch
 from equilib import equi2pers
 from PIL import Image, ImageDraw, ImageFont
+
+
 
 from ultralytics import YOLO, YOLOWorld
 
@@ -94,10 +100,9 @@ def screen_to_equirectangular(x, y, screen_width, screen_height, fov, yaw, pitch
 
 
 # Load a model
-# model = YOLO("runs/detect/train55/weights/best.pt")  # pretrained YOLOv8n model
-model = YOLOWorld('/home/lixiang/PycharmProjects/ultralytics/runs/detect/train70/weights/best.pt')
-model.set_classes(['trash', 'drying along the street', 'manhole cover', 'trash can'])
-
+model = YOLO('runs/detect/train13/weights/best.pt')  # pretrained YOLOv8n model
+# model = YOLOWorld('/home/lixiang/PycharmProjects/ultralytics/runs/detect/train11/weights/best.pt')
+# model.set_classes(['trash', 'drying along the street', 'trash can', 'manhole conver'])
 # inferencer = MMSegInferencer(model='deeplabv3plus_r18-d8_4xb2-80k_cityscapes-512x1024')
 
 
@@ -244,11 +249,19 @@ img_names = [x.split("/")[-1].split(".")[0] for x in images]
 #     # 4: '垃圾正常盛放',
 # }
 
+# name_dict = {
+#     0: '路面破损',
+#     # 1: '沿街晾晒',
+#     # 2: '垃圾满冒',
+#     # 3: '乱扔垃圾',
+#     # 4: '垃圾正常盛放',
+# }
+
 name_dict = {
     # 0: '垃圾',
     # 1: '沿街晾晒',
-    2: '井盖',
-    3: '垃圾桶',
+    2: '垃圾桶',
+    3: '井盖',
     # 4: '垃圾正常盛放',
 }
 confs = [0.1]
@@ -272,7 +285,7 @@ for idx_conf in confs:
         if img is None:
             continue
         # img = cv2.imread(image_url)
-        # cv2.imwrite(f'det/{img_names[img_idx]}_orig_result.jpg', img)
+        cv2.imwrite(f'det/{img_names[img_idx]}_orig_result.jpg', img)
         print(f"下载图片耗时{time.time() - now:.2f}s")
         # img = e2c(img, face_w=int(img.shape[0] / 3))
         now = time.time()
@@ -360,9 +373,11 @@ for idx_conf in confs:
                     # if (p2[0] - p1[0]) * (p2[1] - p1[1]) < 100:
                     #     continue
                     left_top = screen_to_equirectangular(box_np[0], box_np[1], pers_width, pers_height, fov_deg,
-                                                         math.degrees(pers_image.yaw), math.degrees(pers_image.pitch), width, height)
+                                                         math.degrees(pers_image.yaw), math.degrees(pers_image.pitch),
+                                                         width, height)
                     right_bottom = screen_to_equirectangular(box_np[2], box_np[3], pers_width, pers_height, fov_deg,
-                                                             math.degrees(pers_image.yaw), math.degrees(pers_image.pitch), width, height)
+                                                             math.degrees(pers_image.yaw),
+                                                             math.degrees(pers_image.pitch), width, height)
                     if left_top[0] > right_bottom[0]:
                         # 如果x1大于x2且它俩之间的距离相差大于一屏，则说明标注框跨过了接缝，需要将x1进行偏移
                         if left_top[0] - right_bottom[0] > pers_should_width:
@@ -371,18 +386,19 @@ for idx_conf in confs:
                             left_top[0], right_bottom[0] = right_bottom[0], left_top[0]
                     if left_top[1] > right_bottom[1]:
                         left_top[1], right_bottom[1] = right_bottom[1], left_top[1]
-                    # cv2.imshow('img', cv2.cvtColor(np.asarray(orig_image), cv2.COLOR_RGB2BGR))
+                    # cv2.imshow('img_orig', cv2.cvtColor(np.asarray(orig_image), cv2.COLOR_RGB2BGR))
                     # cv2.waitKey(0)
 
                     orig_draw.rectangle(xy=(p1, p2), fill=None, outline='red', width=5)
                     # cv2.rectangle(img=img, pt1=p1, pt2=p2, color=(0, 0, 255), thickness=10)
-                    font = ImageFont.truetype(font='wqy-zenhei.ttc', size=40)  # 字体设置，Windows系统可以在 "C:\Windows\Fonts" 下查找
+                    font = ImageFont.truetype(font='wqy-zenhei.ttc',
+                                              size=40)  # 字体设置，Windows系统可以在 "C:\Windows\Fonts" 下查找
                     orig_draw.rectangle(((p1[0], p1[1] - 50), (p1[0] + 300, p1[1])),
                                         fill=(255, 0, 0), )
                     name = f'{name_dict[cls_np]} {conf_np:.2f}'
                     orig_draw.text(xy=(p1[0], p1[1] - font.size - 10), text=name, font=font,
                                    fill=(255, 255, 255))
-                    # cv2.imshow('img', cv2.cvtColor(np.asarray(orig_image), cv2.COLOR_RGB2BGR))
+                    # cv2.imshow('img_label', cv2.cvtColor(np.asarray(orig_image), cv2.COLOR_RGB2BGR))
                     # cv2.waitKey(0)
                     r = Rectangle(left_top, right_bottom, cls_np, conf_np, pers_image.pitch, pers_image.yaw)
                     r.img_idx = idx
@@ -390,7 +406,8 @@ for idx_conf in confs:
                     r.pers_p2 = [box_np[2], box_np[3]]
                     rectangles.append(r)
                 # print(f'保存标注图第{idx}张')
-                cv2.imwrite(f'{dir}/标注图/labeled_img_{idx}.jpg', cv2.cvtColor(np.asarray(orig_image), cv2.COLOR_RGB2BGR))
+                cv2.imwrite(f'{dir}/标注图/labeled_img_{idx}.jpg',
+                            cv2.cvtColor(np.asarray(orig_image), cv2.COLOR_RGB2BGR))
         # merged = []
         # for rect1 in rectangles:
         #     # 如果该矩形已被其他矩形合并过则不需要再处理
