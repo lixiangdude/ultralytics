@@ -14,9 +14,8 @@ import torch
 from equilib import equi2pers
 from PIL import Image, ImageDraw, ImageFont
 
-
-
 from ultralytics import YOLO, YOLOWorld
+
 
 # from mmseg.apis import MMSegInferencer
 
@@ -100,7 +99,7 @@ def screen_to_equirectangular(x, y, screen_width, screen_height, fov, yaw, pitch
 
 
 # Load a model
-model = YOLO('runs/detect/train13/weights/best.pt')  # pretrained YOLOv8n model
+model = YOLO('runs/detect/train55/weights/best.pt')  # pretrained YOLOv8n model
 # model = YOLOWorld('/home/lixiang/PycharmProjects/ultralytics/runs/detect/train11/weights/best.pt')
 # model.set_classes(['trash', 'drying along the street', 'trash can', 'manhole conver'])
 # inferencer = MMSegInferencer(model='deeplabv3plus_r18-d8_4xb2-80k_cityscapes-512x1024')
@@ -168,12 +167,9 @@ images = [
     '/home/lixiang/PycharmProjects/ultralytics/imgs/5dd5f033eb134b1ab3c40a082c28bc61.jpg',
     '/home/lixiang/PycharmProjects/ultralytics/imgs/06d54efd006e490d8aa5603260ccb4c2.jpg',
     '/home/lixiang/PycharmProjects/ultralytics/imgs/6e0aeebd172640b88c72d3fc88f3fab9.jpg',
-    '/home/lixiang/PycharmProjects/ultralytics/imgs/6ee72c73a2f44f689349f1e041ea233d.jpg',
     '/home/lixiang/PycharmProjects/ultralytics/imgs/7c728674787f4301b2f8f811a008112b.jpg',
     '/home/lixiang/PycharmProjects/ultralytics/imgs/8cac48fc625543839aa1bae0898d88a4.jpg',
-    '/home/lixiang/PycharmProjects/ultralytics/imgs/08e00b6412c847ecb18c84b81449ec15.jpg',
     '/home/lixiang/PycharmProjects/ultralytics/imgs/8f855773ff664bf99d9a5d990c09cd08.jpg',
-    '/home/lixiang/PycharmProjects/ultralytics/imgs/9a686709e7584f9d8ca10578590416c7.jpg',
     '/home/lixiang/PycharmProjects/ultralytics/imgs/9b7e6f36f1eb4bfb838a30630b9182eb.jpg',
     '/home/lixiang/PycharmProjects/ultralytics/imgs/9cd7690101e745ce8ef6d3a8a008474d.jpg',
     '/home/lixiang/PycharmProjects/ultralytics/imgs/09ce3f8aaf6347eaab1c9210f2b93ad4.jpg',
@@ -186,11 +182,9 @@ images = [
     '/home/lixiang/PycharmProjects/ultralytics/imgs/59c57873ff1c46449017f7e58d0f0e1f.jpg',
     '/home/lixiang/PycharmProjects/ultralytics/imgs/71e86432ce6d480bafa2c43493ec4568.jpg',
     '/home/lixiang/PycharmProjects/ultralytics/imgs/72fadd4ee38a4ad392332aca03c85faa.jpg',
-    '/home/lixiang/PycharmProjects/ultralytics/imgs/77f7cea57d564527832efb59017481f4.jpg',
     '/home/lixiang/PycharmProjects/ultralytics/imgs/85a20c16d6ab41d18661271a44f88aed.jpg',
     '/home/lixiang/PycharmProjects/ultralytics/imgs/395d151408804ae981d5d3a636d12fdd.jpg',
     '/home/lixiang/PycharmProjects/ultralytics/imgs/461f3403acc547bfb98f02d8da5bfe1c.jpg',
-    '/home/lixiang/PycharmProjects/ultralytics/imgs/536d1670615b4e1ba17a3f61890a099f.jpg',
     '/home/lixiang/PycharmProjects/ultralytics/imgs/683a80b9f97e4f8583b386671872a405.jpg',
     '/home/lixiang/PycharmProjects/ultralytics/imgs/748f05324f1444fd8f6b232300ccec6e.jpg',
     '/home/lixiang/PycharmProjects/ultralytics/imgs/0761f55764f248e586bca24dcfca41dd.jpg',
@@ -207,7 +201,6 @@ images = [
     '/home/lixiang/PycharmProjects/ultralytics/imgs/40664431b6574654bb77b9ebebfbbd55.jpg',
     '/home/lixiang/PycharmProjects/ultralytics/imgs/226134332a1943f2b7ddd8f93e94c439.jpg',
     '/home/lixiang/PycharmProjects/ultralytics/imgs/18351469262047a58a6e93baecd1105f.jpg',
-    '/home/lixiang/PycharmProjects/ultralytics/imgs/a0fb7455a45044739216e2cca627f473.jpg',
     '/home/lixiang/PycharmProjects/ultralytics/imgs/a6a88f1785fe4042b24338b565c1fd63.jpg',
     '/home/lixiang/PycharmProjects/ultralytics/imgs/a0302eaf6dc84a84842970feb9cab50f.jpg',
     '/home/lixiang/PycharmProjects/ultralytics/imgs/afb4cb43e14941e7b074123c040f747b.jpg',
@@ -228,26 +221,23 @@ images = [
     '/home/lixiang/PycharmProjects/ultralytics/imgs/eab9eed230cc484da5ea07a3d7cf2bef.jpg',
     '/home/lixiang/PycharmProjects/ultralytics/imgs/ec33dbe2240b434a92900213d048c3d5.jpg',
     '/home/lixiang/PycharmProjects/ultralytics/imgs/ec2869c2311b4129a830489f91440249.jpg',
-    '/home/lixiang/PycharmProjects/ultralytics/imgs/ed22d5f9a2094cf4bc5af6dc2f88b6c3.jpg',
     '/home/lixiang/PycharmProjects/ultralytics/imgs/efa8564101ec4906843e8519c6d5f44f.jpg',
     '/home/lixiang/PycharmProjects/ultralytics/imgs/f85c77a28cba414dbd1ed9a5a24307d9.jpg',
     '/home/lixiang/PycharmProjects/ultralytics/imgs/f97e1b70d8f34083a4b093862f1d0cd8.jpg',
     '/home/lixiang/PycharmProjects/ultralytics/imgs/f274bc26311c4ab28b2444082f2a8d49.jpg',
     '/home/lixiang/PycharmProjects/ultralytics/imgs/f592b7cefd8a4f81b2ba83b846826502.jpg',
     '/home/lixiang/PycharmProjects/ultralytics/imgs/f3936ca5de0e4887956dd88773502391.jpg',
-    '/home/lixiang/PycharmProjects/ultralytics/imgs/fdefb629609a409e8dc9125e82218d57.jpg',
-    '/home/lixiang/PycharmProjects/ultralytics/imgs/fe146e68a6c84c868243a01bec88e4c8.jpg',
 ]
 
 img_names = [x.split("/")[-1].split(".")[0] for x in images]
 
-# name_dict = {
-#     0: "路面破损",
-#     # 1: '沿街晾晒',
-#     # 2: '垃圾满冒',
-#     # 3: '乱扔垃圾',
-#     # 4: '垃圾正常盛放',
-# }
+name_dict = {
+    0: "路面破损",
+    # 1: '沿街晾晒',
+    # 2: '垃圾满冒',
+    # 3: '乱扔垃圾',
+    # 4: '垃圾正常盛放',
+}
 
 # name_dict = {
 #     0: '路面破损',
@@ -257,13 +247,13 @@ img_names = [x.split("/")[-1].split(".")[0] for x in images]
 #     # 4: '垃圾正常盛放',
 # }
 
-name_dict = {
-    # 0: '垃圾',
-    # 1: '沿街晾晒',
-    2: '垃圾桶',
-    3: '井盖',
-    # 4: '垃圾正常盛放',
-}
+# name_dict = {
+#     # 0: '垃圾',
+#     # 1: '沿街晾晒',
+#     2: '垃圾桶',
+#     3: '井盖',
+#     # 4: '垃圾正常盛放',
+# }
 confs = [0.1]
 
 
@@ -356,7 +346,7 @@ for idx_conf in confs:
             pitch += math.radians(5)
             print(f"转动视角耗时{time.time() - now}秒")
 
-            results = model.predict([elem.pers_img for elem in pers_imgs], conf=0.3, imgsz=640)
+            results = model.predict([elem.pers_img for elem in pers_imgs], conf=0.5, imgsz=640)
             for idx, result in enumerate(results):
                 pers_image = pers_imgs[idx]
                 orig_image = Image.fromarray(pers_image.pers_img[..., ::-1])  # 转成 PIL 格式
@@ -370,8 +360,8 @@ for idx_conf in confs:
                     conf_np = conf.cpu().detach().numpy().item()
                     p1 = (box_np[0], box_np[1])
                     p2 = (box_np[2], box_np[3])
-                    # if (p2[0] - p1[0]) * (p2[1] - p1[1]) < 100:
-                    #     continue
+                    if ((p2[0] - p1[0]) * (p2[1] - p1[1])) / (pers_width * pers_height) < (1 / 500) and conf_np < 0.7:
+                        continue
                     left_top = screen_to_equirectangular(box_np[0], box_np[1], pers_width, pers_height, fov_deg,
                                                          math.degrees(pers_image.yaw), math.degrees(pers_image.pitch),
                                                          width, height)
@@ -408,31 +398,31 @@ for idx_conf in confs:
                 # print(f'保存标注图第{idx}张')
                 cv2.imwrite(f'{dir}/标注图/labeled_img_{idx}.jpg',
                             cv2.cvtColor(np.asarray(orig_image), cv2.COLOR_RGB2BGR))
-        # merged = []
-        # for rect1 in rectangles:
-        #     # 如果该矩形已被其他矩形合并过则不需要再处理
-        #     if rect1 in merged:
-        #         continue
-        #     for rect2 in rectangles:
-        #         if rect2 in merged or rect1 == rect2:
-        #             continue
-        #         # 如果两个矩形相交则合并，被合并的矩形标记为已被合并
-        #         if rect1.intersect_with(rect2):
-        #             rect1.union(rect2)
-        #             merged.append(rect2)
-        # rectangles = list(filter(lambda rect: rect not in merged, rectangles))
+        merged = []
+        for rect1 in rectangles:
+            # 如果该矩形已被其他矩形合并过则不需要再处理
+            if rect1 in merged:
+                continue
+            for rect2 in rectangles:
+                if rect2 in merged or rect1 == rect2:
+                    continue
+                # 如果两个矩形相交则合并，被合并的矩形标记为已被合并
+                if rect1.intersect_with(rect2):
+                    rect1.union(rect2)
+                    merged.append(rect2)
+        rectangles = list(filter(lambda rect: rect not in merged, rectangles))
         for rectangle in rectangles:
             pitch = rectangle.pitch
             yaw = rectangle.yaw
             draw.rectangle(xy=((rectangle.p1[0], rectangle.p1[1]), (rectangle.p2[0], rectangle.p2[1])), fill=None,
                            outline="red",
-                width=10,)
+                           width=10, )
             # cv2.rectangle(img=img, pt1=p1, pt2=p2, color=(0, 0, 255), thickness=10)
             font = ImageFont.truetype(font="wqy-zenhei.ttc", size=40
-            )  # 字体设置，Windows系统可以在 "C:\Windows\Fonts" 下查找
+                                      )  # 字体设置，Windows系统可以在 "C:\Windows\Fonts" 下查找
             draw.rectangle(((rectangle.p1[0], rectangle.p1[1] - 50), (rectangle.p1[0] + 300, rectangle.p1[1])),
                            fill=(255, 0, 0),
-        )#     # print(left_top, right_bottom)
+                           )  # # print(left_top, right_bottom)
             name = f"{name_dict[rectangle.cls]} {rectangle.conf:.2f}"
             draw.text(xy=(rectangle.p1[0], rectangle.p1[1] - font.size - 10), text=name, font=font,
                       fill=(255, 255, 255))

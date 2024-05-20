@@ -126,7 +126,10 @@ def rotate(rots):
         fov_x=fov_deg,
         mode="bilinear",
     )
-    np.ascontiguousarray(pers_img, np.uint8)
+
+    pers_img = np.ascontiguousarray(np.transpose(pers_img, (1, 2, 0)), np.uint8)
+    cv2.imshow('img', pers_img)
+    cv2.waitKey(0)
 
 
 for img_idx, image_url in enumerate(images):
@@ -167,10 +170,10 @@ for img_idx, image_url in enumerate(images):
                 "pitch": pitch,  # rotate vertical
                 "yaw": yaw,  # rotate horizontal
             })
-            yaw -= np.pi / 18
-            # cv2.imshow('img', cube_result)
-            # cv2.waitKey(0)
-        with Pool(20) as p:
-            p.map(rotate, rots)
+            yaw -= np.pi / 9
+        for rot in rots:
+            rotate(rot)
+        # with Pool(20) as p:
+        #     p.map(rotate, rots)
         pitch += math.radians(5)
         print(f"转动视角耗时{time.time() - now}秒")
