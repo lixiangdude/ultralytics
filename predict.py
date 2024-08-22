@@ -5,7 +5,7 @@ import cv2
 from ultralytics import YOLO
 
 # Load a model
-model = YOLO("runs/detect/train33/weights/best.pt")  # pretrained YOLOv8n model
+model = YOLO("yolov8n.yaml")  # pretrained YOLOv8n model
 
 # Run batched inference on a list of images
 images = [

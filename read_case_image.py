@@ -22,7 +22,7 @@ def parser_merged_cell(sheet, row, col):
             if cell.coordinate in merged_range:
                 # 获取合并区域左上角的单元格作为该单元格的值返回
                 cell = sheet.cell(row=merged_range.min_row, column=merged_range.min_col)
-                break
+                break-
     return cell
 
 

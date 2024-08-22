@@ -37,6 +37,9 @@ __all__ = (
     "CBFuse",
     "CBLinear",
     "Silence",
+    "C2fs",
+    "SPPFSE",
+    "MPGD"
 )
 
 
@@ -176,6 +179,15 @@ class SPPF(nn.Module):
         return self.cv2(torch.cat(y, 1))
 
 
+class SPPFSE(SPPF):
+    def __init__(self, c1, c2, k=5):
+        super().__init__(c1, c2, k)
+        self.se = SELayer(c2)
+
+    def forward(self, x):
+        return self.se(super().forward(x))
+
+
 class C1(nn.Module):
     """CSP Bottleneck with 1 convolution."""
 
@@ -235,6 +247,16 @@ class C2f(nn.Module):
         y = list(self.cv1(x).split((self.c, self.c), 1))
         y.extend(m(y[-1]) for m in self.m)
         return self.cv2(torch.cat(y, 1))
+
+
+class C2fs(C2f):
+    def __init__(self, c1, c2, n=1, shortcut=False, g=1, e=0.5):
+        """Initialize CSP bottleneck layer with two convolutions with arguments ch_in, ch_out, number, shortcut, groups,
+        expansion.
+        """
+        super().__init__(c1, c2, n, shortcut, g, e)
+        self.m = nn.ModuleList(SEBottleneck(self.c, self.c, g, k=((3, 3), (3, 3)), e=1.0) for _ in range(n))
+        # self.m = nn.ModuleList(Bottleneck(self.c, self.c, shortcut, g, k=((3, 3), (3, 3)), e=1.0) for _ in range(n))
 
 
 class C3(nn.Module):
@@ -340,6 +362,41 @@ class Bottleneck(nn.Module):
         return x + self.cv2(self.cv1(x)) if self.add else self.cv2(self.cv1(x))
 
 
+class SELayer(nn.Module):
+    def __init__(self, channel, reduction=16):
+        super().__init__()
+        self.avg_pool = nn.AdaptiveAvgPool2d(1)
+        self.fc = nn.Sequential(
+            nn.Linear(channel, channel // reduction, bias=False),
+            nn.ReLU(inplace=True),
+            nn.Linear(channel // reduction, channel, bias=False),
+            nn.Sigmoid()
+        )
+
+    def forward(self, x):
+        b, c, _, _ = x.size()
+        y = self.avg_pool(x).view(b, c)  # squeeze操作
+        y = self.fc(y).view(b, c, 1, 1)  # FC获取通道注意力权重，是具有全局信息的
+        return x * y.expand_as(x)  # 注意力作用每一个通道上
+
+
+class SEBottleneck(nn.Module):
+    def __init__(self, c1, c2, g=1, k=(3, 3), e=0.5):
+        """Initializes a bottleneck module with given input/output channels, shortcut option, group, kernels, and
+        expansion.
+        """
+        super().__init__()
+        c_ = int(c2 * e)  # hidden channels
+        self.cv1 = Conv(c1, c_, k[0], 1)
+        self.cv2 = Conv(c_, c2, k[1], 1, g=g)
+        self.avg_pool = nn.AdaptiveAvgPool2d(1)
+        self.se = SELayer(c_)
+
+    def forward(self, x):
+        """'forward()' applies the YOLO FPN to input data."""
+        return self.se(self.cv2(self.cv1(x)))
+
+
 class BottleneckCSP(nn.Module):
     """CSP Bottleneck https://github.com/WongKinYiu/CrossStagePartialNetworks."""
 
@@ -426,7 +483,7 @@ class MaxSigmoidAttnBlock(nn.Module):
 
         aw = torch.einsum("bmchw,bnmc->bmhwn", embed, guide)
         aw = aw.max(dim=-1)[0]
-        aw = aw / (self.hc**0.5)
+        aw = aw / (self.hc ** 0.5)
         aw = aw + self.bias[None, :, None, None]
         aw = aw.sigmoid() * self.scale
 
@@ -490,7 +547,7 @@ class ImagePoolingAttn(nn.Module):
         """Executes attention mechanism on input tensor x and guide tensor."""
         bs = x[0].shape[0]
         assert len(x) == self.nf
-        num_patches = self.k**2
+        num_patches = self.k ** 2
         x = [pool(proj(x)).view(bs, -1, num_patches) for (x, proj, pool) in zip(x, self.projections, self.im_pools)]
         x = torch.cat(x, dim=-1).transpose(1, 2)
         q = self.query(text)
@@ -503,7 +560,7 @@ class ImagePoolingAttn(nn.Module):
         v = v.reshape(bs, -1, self.nh, self.hc)
 
         aw = torch.einsum("bnmc,bkmc->bmnk", q, k)
-        aw = aw / (self.hc**0.5)
+        aw = aw / (self.hc ** 0.5)
         aw = F.softmax(aw, dim=-1)
 
         x = torch.einsum("bmnk,bkmc->bnmc", aw, v)
@@ -684,3 +741,32 @@ class CBFuse(nn.Module):
         res = [F.interpolate(x[self.idx[i]], size=target_size, mode="nearest") for i, x in enumerate(xs[:-1])]
         out = torch.sum(torch.stack(res + xs[-1:]), dim=0)
         return out
+
+
+class MPGD(nn.Module):
+
+    def __init__(self, c1, c2):
+        super(MPGD, self).__init__()
+        self.cv1 = Conv(c1, c1, 1, 1)
+        self.cv2 = Conv(c1, c1, 3, 2)
+        self.max_pool = nn.MaxPool2d(2, 2)
+        self.ghost = GhostConv(c1, c1)
+
+    def forward(self, x):
+        conv_out = self.cv2(self.cv1(x))
+        ghost_out = self.ghost(self.max_pool(x))
+        return torch.cat([conv_out, ghost_out], dim=1)
+
+
+class APGD(nn.Module):
+    def __init__(self, c1, c2):
+        super(APGD, self).__init__()
+        self.cv1 = Conv(c1, c1, 1, 1)
+        self.cv2 = Conv(c1, c1, 3, 2)
+        self.avg_pool = nn.AvgPool2d(2, 2)
+        self.ghost = GhostConv(c1, c1)
+
+    def forward(self, x):
+        conv_out = self.cv2(self.cv1(x))
+        ghost_out = self.ghost(self.avg_pool(x))
+        return torch.cat([conv_out, ghost_out], dim=1)
